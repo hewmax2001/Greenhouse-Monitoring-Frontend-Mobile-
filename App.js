@@ -1,12 +1,8 @@
-import { StatusBar } from 'expo-status-bar';
-import {Button, StyleSheet, Text, View} from 'react-native';
+import {Button, Modal, StyleSheet, Text, View} from 'react-native';
 import WebView from "react-native-webview";
 import Constants from 'expo-constants';
 
-import * as Notification from 'expo-notifications';
-import * as Permissions from 'expo-permissions';
 import {useEffect, useState} from "react";
-import * as Notifications from "expo-notifications";
 import registerNNPushToken, {registerIndieID} from 'native-notify';
 import * as SecureStore from 'expo-secure-store';
 import axios from "axios";
@@ -14,7 +10,8 @@ import {APP_ID, APP_TOKEN, BASE_URL} from "./constants";
 
 export default function App() {
     const [expoToken, setExpoToken] = useState()
-
+    const [modalVisible, setModalVisible] = useState(false);
+    const handleModal = () => setModalVisible(() => !modalVisible);
 
     useEffect(() => {
         getUserToken()
@@ -53,7 +50,20 @@ export default function App() {
       <View
           style={styles.container}
       >
-          <Text>Hello</Text>
+          <Button title="Set Thresholds" onPress={() => setModalVisible(true)} />
+          <Modal
+          visible={modalVisible}
+          transparent={true}
+          onRequestClose={() => {setModalVisible(false)}}
+          >
+            <Button title="Hide modal" onPress={() => setModalVisible(false)} />
+            <View style={styles.popupContainer}>
+                <View style={styles.modalView}>
+                    <Text>Hello!</Text>
+                    <Text>Hello!</Text>
+                </View>
+            </View>
+          </Modal>
           <WebView
             style={styles.webContainer}
             source={{ uri: 'https://capstone-react-frontend.vercel.app/' }}
@@ -65,18 +75,39 @@ export default function App() {
 
 
 const styles = StyleSheet.create({
-  container: {
-    marginTop: Constants.statusBarHeight,
-    flex: 1,
-    justifyContent: 'flex-start',
-    alignItems: 'stretch',
-  },
-  webContainer: {
-    flex: 1,
-    backgroundColor: '#fff',
+    container: {
+        marginTop: Constants.statusBarHeight,
+        flex: 1,
+        justifyContent: 'center',
+        alignItems: 'stretch',
+    },
+    popupContainer: {
+        flex: 1,
+        justifyContent: 'center',
+        backgroundColor: '#80808080',
+        alignItems: 'center',
+    },
+    modalView: {
+    margin: 20,
+    backgroundColor: 'white',
+    borderRadius: 20,
+    padding: 35,
     alignItems: 'center',
-    justifyContent: 'center',
-  }
+    shadowColor: '#000',
+    shadowOffset: {
+      width: 0,
+      height: 2,
+    },
+    shadowOpacity: 0.25,
+    shadowRadius: 4,
+    elevation: 5,
+    },
+    webContainer: {
+        flex: 1,
+        backgroundColor: '#fff',
+        alignItems: 'center',
+        justifyContent: 'center',
+    }
 });
 
 
