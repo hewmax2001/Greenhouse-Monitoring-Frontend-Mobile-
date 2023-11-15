@@ -187,7 +187,7 @@ export default class ThresholdMenu extends React.Component {
     render() {
         return (
             <View>
-                <Button title="Set Thresholds" onPress={() => this.handleModal()}/>
+                <Button title="Threshold Alert Settings" onPress={() => this.handleModal()}/>
                 <Modal
                     visible={this.state.modalVisible}
                     transparent={true}
@@ -195,7 +195,7 @@ export default class ThresholdMenu extends React.Component {
                         this.setState(() => ({modalVisible: false}));
                     }}
                 >
-                    <Button title="Hide modal" onPress={() => {this.handleModal()}}/>
+                    <Button title="Close Threshold Settings" onPress={() => {this.handleModal()}}/>
                     <View style={styles.popupContainer}>
                         {this.renderModal()}
                     </View>
