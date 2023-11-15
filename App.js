@@ -7,6 +7,7 @@ import registerNNPushToken, {registerIndieID} from 'native-notify';
 import * as SecureStore from 'expo-secure-store';
 import axios from "axios";
 import {APP_ID, APP_TOKEN, BASE_URL} from "./constants";
+import ThresholdMenu from "./components/ThresholdMenu";
 
 export default function App() {
     const [expoToken, setExpoToken] = useState()
@@ -50,20 +51,7 @@ export default function App() {
       <View
           style={styles.container}
       >
-          <Button title="Set Thresholds" onPress={() => setModalVisible(true)} />
-          <Modal
-          visible={modalVisible}
-          transparent={true}
-          onRequestClose={() => {setModalVisible(false)}}
-          >
-            <Button title="Hide modal" onPress={() => setModalVisible(false)} />
-            <View style={styles.popupContainer}>
-                <View style={styles.modalView}>
-                    <Text>Hello!</Text>
-                    <Text>Hello!</Text>
-                </View>
-            </View>
-          </Modal>
+          <ThresholdMenu/>
           <WebView
             style={styles.webContainer}
             source={{ uri: 'https://capstone-react-frontend.vercel.app/' }}
@@ -88,19 +76,20 @@ const styles = StyleSheet.create({
         alignItems: 'center',
     },
     modalView: {
-    margin: 20,
-    backgroundColor: 'white',
-    borderRadius: 20,
-    padding: 35,
-    alignItems: 'center',
-    shadowColor: '#000',
-    shadowOffset: {
-      width: 0,
-      height: 2,
-    },
-    shadowOpacity: 0.25,
-    shadowRadius: 4,
-    elevation: 5,
+        margin: 20,
+        minWidth: '50%',
+        backgroundColor: 'white',
+        borderRadius: 20,
+        padding: 35,
+        alignItems: 'center',
+        shadowColor: '#000',
+        shadowOffset: {
+          width: 0,
+          height: 2,
+        },
+        shadowOpacity: 0.25,
+        shadowRadius: 4,
+        elevation: 5,
     },
     webContainer: {
         flex: 1,
