@@ -1,6 +1,6 @@
 import {Button, Modal, StyleSheet, Text, TextInput, View} from "react-native";
 import React from "react";
-import Constants from "expo-constants";
+import Constants from "expo-constants";r
 import axios from "axios";
 import {APP_ID, APP_TOKEN, BASE_URL} from "../constants";
 import {registerIndieID} from "native-notify";
@@ -94,7 +94,6 @@ export default class ThresholdMenu extends React.Component {
 
     changeTemp = () => {
         const {profile} = this.props;
-        alert(profile.maxTemp)
         let minValue = (profile.minTemp) ? profile.minTemp.toString() : "";
         let maxValue = (profile.maxTemp) ? profile.maxTemp.toString() : "";
 
@@ -110,7 +109,6 @@ export default class ThresholdMenu extends React.Component {
 
     changeHum = () => {
         const {profile} = this.props;
-        alert(profile.expoUserToken)
         let minValue = (profile.minHumidity) ? profile.minHumidity.toString() : "";
         let maxValue = (profile.maxHumidity) ? profile.maxHumidity.toString() : "";
 
