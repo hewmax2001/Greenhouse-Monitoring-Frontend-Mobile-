@@ -1,6 +1,9 @@
 import {Button, Modal, StyleSheet, Text, TextInput, View} from "react-native";
 import React from "react";
 import Constants from "expo-constants";
+import axios from "axios";
+import {APP_ID, APP_TOKEN, BASE_URL} from "../constants";
+import {registerIndieID} from "native-notify";
 
 export default class ThresholdMenu extends React.Component {
     constructor(props) {
@@ -9,66 +12,177 @@ export default class ThresholdMenu extends React.Component {
             isVisibleFooter: false,
             modalVisible: false,
             selectVisible: true,
-            minValue: "0",
-            maxValue: "50",
+            minValue: "",
+            maxValue: "",
             threshTitle: "",
+            postfix: "",
+            selectedVar: "",
         };
     }
 
     renderModal = () => {
-        const {selectVisible} = this.state;
+        const {selectVisible, minValue, maxValue, threshTitle, postfix} = this.state;
         if (selectVisible) {
             return (
-                <View>
+                <View style={styles.modalView}>
                     <Text>Select Variable</Text>
-                    <View>
-                        <Button title={"Temperature"} onPress={() => this.setTemperature()}></Button>
-                        <Button title={"Humidity"}></Button>
-                        <Button title={"Soil Moisture"}></Button>
-                        <Button title={"Light Intensity"}></Button>
+                    <View style={styles.buttonContainer}>
+                        <View style={styles.rowView}>
+                            <View style={styles.buttonVariable}>
+                                <Button title={"Temperature"} onPress={() => this.changeTemp()}></Button>
+                            </View>
+                            <View style={styles.buttonVariable}>
+                                <Button title={"Humidity"} onPress={() => this.changeHum()}></Button>
+                            </View>
+
+                        </View>
+                        <View style={styles.rowView}>
+                            <View style={styles.buttonVariable}>
+                                <Button title={"Soil Moisture"} onPress={() => this.changeSoil()}></Button>
+                            </View>
+                            <View style={styles.buttonVariable}>
+                                <Button title={"Light Intensity"} onPress={() => this.changeLight()}></Button>
+                            </View>
+                        </View>
                     </View>
                 </View>
             );
         }
         return (
-            <View>
-                <Text>{this.state.threshTitle}</Text>
-                <TextInput
-                    value={this.state.minValue}
-                    placeholder=""
-                    keyboardType="numeric"
-                />
-                <TextInput
-                    value={this.state.maxValue}
-                    placeholder=""
-                    keyboardType="numeric"
-                />
-                <Button title="Set"/>
-                <Button title="Close" onPress={() => {
-                    this.setState(() => ({selectVisible: true}))
-                }}/>
+            <View style={styles.modalView}>
+                <Text>{threshTitle}</Text>
+                <Text>Minimum Threshold</Text>
+                <View style={styles.rowView}>
+                    <TextInput
+                        style={styles.inputVariable}
+                        value={minValue}
+                        placeholder=""
+                        keyboardType="numeric"
+                        textAlign={'right'}
+                        onChangeText={ value => {this.changeMin(value)}}
+                    />
+                    <Text>{postfix}</Text>
+                </View>
+                <Text>Maximum Threshold</Text>
+                <View style={styles.rowView}>
+                    <TextInput
+                        style={styles.inputVariable}
+                        value={maxValue}
+                        placeholder=""
+                        keyboardType="numeric"
+                        textAlign={'right'}
+                        onChangeText={ value => {this.changeMax(value)}}
+                    />
+                    <Text>{postfix}</Text>
+                </View>
+                <View style={styles.buttonVariable}>
+                    <Button title="Set" onPress={() => {this.setThresholds().then(this.handleModal())}}/>
+                </View>
+                <View style={styles.buttonVariable}>
+                    <Button title="Close" onPress={() => {
+                        this.setState(() => ({selectVisible: true}))
+                    }}/>
+                </View>
             </View>
         );
     };
 
     handleModal = () => {
-        this.setState(() => ({modalVisible: !modalVisible}));
+        this.setState(() => ({modalVisible: !modalVisible, selectVisible: true}));
         const {modalVisible} = this.state;
     };
 
-    setTemperature = () => {
+    changeTemp = () => {
+        const {profile} = this.props;
+        alert(profile.maxTemp)
+        let minValue = (profile.minTemp) ? profile.minTemp.toString() : "";
+        let maxValue = (profile.maxTemp) ? profile.maxTemp.toString() : "";
+
         this.setState(() => ({
             selectVisible: false,
-            minValue: 0,
-            maxValue: 50,
+            minValue: minValue,
+            maxValue: maxValue,
             threshTitle: "Temperature",
+            postfix: "°C",
+            selectedVar: "temp",
         }));
     }
 
-    onPressVisible = () => {
-        this.setState(() => ({isVisibleFooter: !isVisibleFooter}));
-        const {isVisibleFooter} = this.state;
-    };
+    changeHum = () => {
+        const {profile} = this.props;
+        alert(profile.expoUserToken)
+        let minValue = (profile.minHumidity) ? profile.minHumidity.toString() : "";
+        let maxValue = (profile.maxHumidity) ? profile.maxHumidity.toString() : "";
+
+        this.setState(() => ({
+            selectVisible: false,
+            minValue: minValue,
+            maxValue: maxValue,
+            threshTitle: "Humidity",
+            postfix: "%",
+            selectedVar: "hum",
+        }));
+    }
+
+    changeSoil = () => {
+        const {profile} = this.props;
+        let minValue = (profile.minSoil) ? profile.minSoil.toString() : "";
+        let maxValue = (profile.maxSoil) ? profile.maxSoil.toString() : "";
+
+        this.setState(() => ({
+            selectVisible: false,
+            minValue: minValue,
+            maxValue: maxValue,
+            threshTitle: "Soil Moisture",
+            postfix: "%",
+            selectedVar: "soil",
+        }));
+    }
+
+    changeLight = () => {
+        const {profile} = this.props;
+        let minValue = (profile.minLight) ? profile.minLight.toString() : "";
+        let maxValue = (profile.maxLight) ? profile.maxLight.toString() : "";
+
+        this.setState(() => ({
+            selectVisible: false,
+            minValue: minValue,
+            maxValue: maxValue,
+            threshTitle: "Light Intensity",
+            postfix: "",
+            selectedVar: "light",
+        }));
+    }
+
+    setThresholds = async () => {
+        const {minValue, maxValue, selectedVar} = this.state;
+        const {profile} = this.props;
+        await axios.post(BASE_URL + 'set_' + selectedVar + '_alert/', {
+            expo_token: profile.expoUserToken,
+            min: minValue,
+            max: maxValue,
+        }).then(async response => {
+            alert(response.data.message)
+            await axios.post(BASE_URL + 'get_alert_profile/', {
+                expo_token: profile.expoUserToken,
+            }).then(function (response) {
+                return response.data
+            }).catch(error => console.log(error))
+        })
+    }
+
+    changeMin = (value) => {
+        this.setState(() => ({minValue: value}));
+    }
+
+    changeMax = (value) => {
+        this.setState(() => ({maxValue: value}));
+    }
+
+    setAlertProfile = (profile) => {
+        this.props.profile = profile;
+    }
+
 
     render() {
         return (
@@ -81,13 +195,9 @@ export default class ThresholdMenu extends React.Component {
                         this.setState(() => ({modalVisible: false}));
                     }}
                 >
-                    <Button title="Hide modal" onPress={() => {
-                        this.setState(() => ({modalVisible: false}));
-                    }}/>
+                    <Button title="Hide modal" onPress={() => {this.handleModal()}}/>
                     <View style={styles.popupContainer}>
-                        <View style={styles.modalView}>
-                            {this.renderModal()}
-                        </View>
+                        {this.renderModal()}
                     </View>
                 </Modal>
             </View>
@@ -103,8 +213,11 @@ const styles = StyleSheet.create({
         alignItems: 'center',
     },
     modalView: {
+        display: "flex",
+        flexDirection: "column",
+        gap: 5,
         margin: 20,
-        minWidth: '50%',
+        minWidth: '70%',
         backgroundColor: 'white',
         borderRadius: 20,
         padding: 35,
@@ -117,5 +230,29 @@ const styles = StyleSheet.create({
         shadowOpacity: 0.25,
         shadowRadius: 4,
         elevation: 5,
+        borderStyle: "solid",
+        borderColor: '#000',
+        borderWidth: 2,
     },
+    buttonContainer: {
+        display: "flex",
+        flexDirection: "column",
+        gap: 5,
+    },
+    rowView: {
+        display: "flex",
+        flexDirection: "row",
+        justifyContent: "space-evenly",
+        gap: 5,
+    },
+    buttonVariable: {
+        width: "50%",
+    },
+    inputVariable: {
+        flex: 1,
+        marginLeft: 10,
+        borderStyle: "solid",
+        borderColor: '#000',
+        borderWidth: 1,
+    }
 });

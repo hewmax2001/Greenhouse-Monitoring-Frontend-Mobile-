@@ -12,13 +12,14 @@ import ThresholdMenu from "./components/ThresholdMenu";
 export default function App() {
     const [expoToken, setExpoToken] = useState()
     const [modalVisible, setModalVisible] = useState(false);
+    const [alertProfile, setAlertProfile] = useState({})
     const handleModal = () => setModalVisible(() => !modalVisible);
 
     useEffect(() => {
-        getUserToken()
+        getUserProfile()
     }, []);
 
-    async function getUserToken() {
+    async function getUserProfile() {
         let token = await SecureStore.getItemAsync('user_token')
         if (!token) {
             await axios.get(BASE_URL + 'create_alert_profile/', {
@@ -27,6 +28,7 @@ export default function App() {
                 let token = response.data.expoUserToken
                 let subId = response.data.subscriptionToken
                 setExpoToken(token)
+                setAlertProfile(response.data)
                 await SecureStore.setItemAsync('user_token', token)
                 await registerIndieID(subId, APP_ID, APP_TOKEN)
                 alert("Token created! " + token + " / " + subId)
@@ -41,6 +43,7 @@ export default function App() {
                 let token = response.data.expoUserToken
                 let subId = response.data.subscriptionToken
                 setExpoToken(token)
+                setAlertProfile(response.data)
                 await registerIndieID(subId, APP_ID, APP_TOKEN)
                 alert("Token exists! " + token + " / " + subId)
             }).catch(error => console.log(error))
@@ -51,7 +54,7 @@ export default function App() {
       <View
           style={styles.container}
       >
-          <ThresholdMenu/>
+          <ThresholdMenu profile={alertProfile}/>
           <WebView
             style={styles.webContainer}
             source={{ uri: 'https://capstone-react-frontend.vercel.app/' }}
