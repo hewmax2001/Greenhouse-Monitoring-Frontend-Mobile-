@@ -1,7 +1,18 @@
 import {Button, Modal, StyleSheet, Text, TextInput, View} from "react-native";
 import React from "react";
 import axios from "axios";
-import {APP_ID, APP_TOKEN, BASE_URL} from "../constants";
+import {
+    APP_ID,
+    APP_TOKEN,
+    BASE_URL,
+    HUM_VAR,
+    LIGHT_VAR,
+    MAX_HUM, MAX_LIGHT, MAX_SOIL,
+    MAX_TEMP,
+    MIN_HUM, MIN_LIGHT, MIN_SOIL,
+    MIN_TEMP, SOIL_VAR,
+    TEMP_VAR
+} from "../constants";
 import * as SecureStore from "expo-secure-store";
 
 export default class ThresholdMenu extends React.Component {
@@ -123,7 +134,7 @@ export default class ThresholdMenu extends React.Component {
             maxValue: maxValue,
             threshTitle: "Temperature",
             postfix: "°C",
-            selectedVar: "temp",
+            selectedVar: TEMP_VAR,
         }));
     }
 
@@ -138,7 +149,7 @@ export default class ThresholdMenu extends React.Component {
             maxValue: maxValue,
             threshTitle: "Humidity",
             postfix: "%",
-            selectedVar: "hum",
+            selectedVar: HUM_VAR,
         }));
     }
 
@@ -153,7 +164,7 @@ export default class ThresholdMenu extends React.Component {
             maxValue: maxValue,
             threshTitle: "Soil Moisture",
             postfix: "%",
-            selectedVar: "soil",
+            selectedVar: SOIL_VAR,
         }));
     }
 
@@ -168,7 +179,7 @@ export default class ThresholdMenu extends React.Component {
             maxValue: maxValue,
             threshTitle: "Light Intensity",
             postfix: "",
-            selectedVar: "light",
+            selectedVar: LIGHT_VAR,
         }));
     }
 
@@ -178,6 +189,56 @@ export default class ThresholdMenu extends React.Component {
             minValue = "None"
         if (!maxValue)
             maxValue = "None"
+
+        let min = Number(minValue)
+        let max = Number(maxValue)
+
+        switch (selectedVar) {
+            case TEMP_VAR:
+                if (min < MIN_TEMP || min > MAX_TEMP) {
+                    alert("Minimum value must be within 0 - 50")
+                    return
+                }
+                else if (max < MIN_TEMP || max > MAX_TEMP) {
+                    alert("Maximum value must be within 0 - 50")
+                    return
+                }
+                break;
+            case HUM_VAR:
+                if (min < MIN_HUM || min > MAX_HUM) {
+                    alert("Minimum value must be within 0 - 100")
+                    return
+                }
+                else if (max < MIN_HUM || max > MAX_HUM) {
+                    alert("Maximum value must be within 0 - 100")
+                    return
+                }
+                break;
+            case SOIL_VAR:
+                if (min < MIN_SOIL || min > MAX_SOIL) {
+                    alert("Minimum value must be within 0 - 100")
+                    return
+                }
+                else if (max < MIN_SOIL || max > MAX_SOIL) {
+                    alert("Maximum value must be within 0 - 100")
+                    return
+                }
+                break;
+            case LIGHT_VAR:
+                if (min < MIN_LIGHT || min > MAX_LIGHT) {
+                    alert("Minimum value must be within 0 - 2500")
+                    return
+                }
+                else if (max < MIN_LIGHT || max > MAX_LIGHT) {
+                    alert("Maximum value must be within 0 - 2500")
+                    return
+                }
+                break;
+            default:
+                alert("Incorrect variable: " + selectedVar)
+                break;
+        }
+
 
         await axios.post(BASE_URL + 'set_' + selectedVar + '_alert/', {
             expo_token: profile.expoUserToken,

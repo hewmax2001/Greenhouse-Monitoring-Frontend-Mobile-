@@ -1,3 +1,15 @@
 export const BASE_URL = "https://mxhew.pythonanywhere.com/api/"
 export const APP_ID = 14719
 export const APP_TOKEN = 'fS59VdsG6wSUsAUbYddt18'
+export const TEMP_VAR = "temp"
+export const HUM_VAR = "hum"
+export const SOIL_VAR = "soil"
+export const LIGHT_VAR = "light"
+export const MIN_TEMP = 0
+export const MAX_TEMP = 50
+export const MIN_HUM = 0
+export const MAX_HUM = 100
+export const MIN_SOIL = 0
+export const MAX_SOIL = 100
+export const MIN_LIGHT = 0
+export const MAX_LIGHT = 2500
