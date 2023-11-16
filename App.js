@@ -1,9 +1,9 @@
-import {AppState, Button, Modal, StyleSheet, Text, View} from 'react-native';
+import {StyleSheet, View} from 'react-native';
 import WebView from "react-native-webview";
 import Constants from 'expo-constants';
 
 import {useEffect, useState} from "react";
-import registerNNPushToken, {registerIndieID, unregisterIndieDevice} from 'native-notify';
+import {registerIndieID} from 'native-notify';
 import * as SecureStore from 'expo-secure-store';
 import axios from "axios";
 import {APP_ID, APP_TOKEN, BASE_URL} from "./constants";
@@ -29,11 +29,9 @@ export default function App() {
                 setAlertProfile(response.data)
                 await SecureStore.setItemAsync('user_token', token)
                 await registerIndieID(subId, APP_ID, APP_TOKEN)
-                alert("Token created! " + token + " / " + subId)
             }).catch(error => alert(error))
 
         } else {
-            alert(token)
             await axios.post(BASE_URL + 'get_alert_profile/', {
                 expo_token: token,
             }).then(async function (response) {
