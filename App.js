@@ -17,9 +17,6 @@ export default function App() {
 
     useEffect(() => {
         getUserProfile().then()
-        return ()=>{
-            console.log("this will execute right before app close.");
-        }
     }, []);
 
     async function getUserProfile() {

@@ -1,9 +1,8 @@
 import {Button, Modal, StyleSheet, Text, TextInput, View} from "react-native";
 import React from "react";
-import Constants from "expo-constants";
 import axios from "axios";
 import {APP_ID, APP_TOKEN, BASE_URL} from "../constants";
-import {registerIndieID} from "native-notify";
+import * as SecureStore from "expo-secure-store";
 
 export default class ThresholdMenu extends React.Component {
     constructor(props) {
@@ -17,11 +16,15 @@ export default class ThresholdMenu extends React.Component {
             threshTitle: "",
             postfix: "",
             selectedVar: "",
+            profile: {
+                active: false,
+            }
         };
+        this.getUserProfile().then()
     }
 
     renderModal = () => {
-        const {selectVisible, minValue, maxValue, threshTitle, postfix} = this.state;
+        const {selectVisible, minValue, maxValue, threshTitle, postfix, profile} = this.state;
         if (selectVisible) {
             return (
                 <View style={styles.modalView}>
@@ -44,6 +47,10 @@ export default class ThresholdMenu extends React.Component {
                                 <Button title={"Light Intensity"} onPress={() => this.changeLight()}></Button>
                             </View>
                         </View>
+                        {profile.active ?
+                        <Button title={"Disable Alerts"} onPress={() => this.toggleAlerts()}></Button>
+                        :
+                        <Button title={"Enable Alerts"} onPress={() => this.toggleAlerts()}></Button>}
                     </View>
                 </View>
             );
@@ -87,13 +94,26 @@ export default class ThresholdMenu extends React.Component {
         );
     };
 
+    toggleAlerts = async () => {
+        const {profile} = this.state
+        const status = !profile.active
+        console.log("status = " + status)
+        await axios.post(BASE_URL + 'set_alerts_status/', {
+            expo_token: profile.expoUserToken,
+            active: status
+        }).then(response => {
+            alert(response.data.message)
+            this.getUserProfile()
+        })
+    }
+
     handleModal = () => {
         this.setState(() => ({modalVisible: !modalVisible, selectVisible: true}));
         const {modalVisible} = this.state;
     };
 
     changeTemp = () => {
-        const {profile} = this.props;
+        const {profile} = this.state;
         let minValue = (profile.minTemp) ? profile.minTemp.toString() : "";
         let maxValue = (profile.maxTemp) ? profile.maxTemp.toString() : "";
 
@@ -108,7 +128,7 @@ export default class ThresholdMenu extends React.Component {
     }
 
     changeHum = () => {
-        const {profile} = this.props;
+        const {profile} = this.state;
         let minValue = (profile.minHumidity) ? profile.minHumidity.toString() : "";
         let maxValue = (profile.maxHumidity) ? profile.maxHumidity.toString() : "";
 
@@ -123,7 +143,7 @@ export default class ThresholdMenu extends React.Component {
     }
 
     changeSoil = () => {
-        const {profile} = this.props;
+        const {profile} = this.state;
         let minValue = (profile.minSoil) ? profile.minSoil.toString() : "";
         let maxValue = (profile.maxSoil) ? profile.maxSoil.toString() : "";
 
@@ -138,7 +158,7 @@ export default class ThresholdMenu extends React.Component {
     }
 
     changeLight = () => {
-        const {profile} = this.props;
+        const {profile} = this.state;
         let minValue = (profile.minLight) ? profile.minLight.toString() : "";
         let maxValue = (profile.maxLight) ? profile.maxLight.toString() : "";
 
@@ -153,20 +173,21 @@ export default class ThresholdMenu extends React.Component {
     }
 
     setThresholds = async () => {
-        const {minValue, maxValue, selectedVar} = this.state;
-        const {profile} = this.props;
+        let {minValue, maxValue, selectedVar, profile} = this.state;
+        if (!minValue)
+            minValue = "None"
+        if (!maxValue)
+            maxValue = "None"
+
         await axios.post(BASE_URL + 'set_' + selectedVar + '_alert/', {
             expo_token: profile.expoUserToken,
             min: minValue,
             max: maxValue,
-        }).then(async response => {
+        }).then(response => {
             alert(response.data.message)
-            await axios.post(BASE_URL + 'get_alert_profile/', {
-                expo_token: profile.expoUserToken,
-            }).then(function (response) {
-                return response.data
-            }).catch(error => console.log(error))
         })
+
+        await this.getUserProfile()
     }
 
     changeMin = (value) => {
@@ -177,8 +198,19 @@ export default class ThresholdMenu extends React.Component {
         this.setState(() => ({maxValue: value}));
     }
 
-    setAlertProfile = (profile) => {
-        this.props.profile = profile;
+    setAlertProfile = (pf) => {
+        this.setState(() => ({profile: pf}))
+        console.log("New status = " + pf.active)
+    }
+
+    async getUserProfile() {
+        let token = await SecureStore.getItemAsync('user_token')
+        await axios.post(BASE_URL + 'get_alert_profile/', {
+            expo_token: token,
+        }).then((response) => {
+            this.setAlertProfile(response.data)
+        }).catch(error => console.log(error))
+
     }
 
 
