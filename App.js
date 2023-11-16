@@ -1,9 +1,9 @@
-import {Button, Modal, StyleSheet, Text, View} from 'react-native';
+import {AppState, Button, Modal, StyleSheet, Text, View} from 'react-native';
 import WebView from "react-native-webview";
 import Constants from 'expo-constants';
 
 import {useEffect, useState} from "react";
-import registerNNPushToken, {registerIndieID} from 'native-notify';
+import registerNNPushToken, {registerIndieID, unregisterIndieDevice} from 'native-notify';
 import * as SecureStore from 'expo-secure-store';
 import axios from "axios";
 import {APP_ID, APP_TOKEN, BASE_URL} from "./constants";
@@ -16,6 +16,7 @@ export default function App() {
     const handleModal = () => setModalVisible(() => !modalVisible);
 
     useEffect(() => {
+        AppState.addEventListener('change', handleAppStateChange);
         getUserProfile()
     }, []);
 
@@ -50,6 +51,12 @@ export default function App() {
         }
     }
 
+    const handleAppStateChange = (nextAppState) => {
+      if (nextAppState === 'inactive') {
+        unregisterIndieDevice(alertProfile.subscriptionToken, APP_ID, APP_TOKEN);
+      }
+    }
+
   return (
       <View
           style={styles.container}
@@ -62,8 +69,6 @@ export default function App() {
       </View>
   );
 }
-
-
 
 const styles = StyleSheet.create({
     container: {
