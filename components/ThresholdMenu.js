@@ -1,6 +1,6 @@
 import {Button, Modal, StyleSheet, Text, TextInput, View} from "react-native";
 import React from "react";
-import Constants from "expo-constants";r
+import Constants from "expo-constants";
 import axios from "axios";
 import {APP_ID, APP_TOKEN, BASE_URL} from "../constants";
 import {registerIndieID} from "native-notify";

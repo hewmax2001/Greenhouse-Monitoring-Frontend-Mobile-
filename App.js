@@ -16,16 +16,16 @@ export default function App() {
     const handleModal = () => setModalVisible(() => !modalVisible);
 
     useEffect(() => {
-        AppState.addEventListener('change', handleAppStateChange);
-        getUserProfile()
+        getUserProfile().then()
+        return ()=>{
+            console.log("this will execute right before app close.");
+        }
     }, []);
 
     async function getUserProfile() {
         let token = await SecureStore.getItemAsync('user_token')
         if (!token) {
-            await axios.get(BASE_URL + 'create_alert_profile/', {
-
-            }).then(async function (response) {
+            await axios.get(BASE_URL + 'create_alert_profile/', {}).then(async function (response) {
                 let token = response.data.expoUserToken
                 let subId = response.data.subscriptionToken
                 setExpoToken(token)
@@ -35,8 +35,7 @@ export default function App() {
                 alert("Token created! " + token + " / " + subId)
             }).catch(error => alert(error))
 
-        }
-        else {
+        } else {
             alert(token)
             await axios.post(BASE_URL + 'get_alert_profile/', {
                 expo_token: token,
@@ -45,30 +44,25 @@ export default function App() {
                 let subId = response.data.subscriptionToken
                 setExpoToken(token)
                 setAlertProfile(response.data)
-                await registerIndieID(subId, APP_ID, APP_TOKEN)
-                alert("Token exists! " + token + " / " + subId)
+                await registerIndieID(subId, APP_ID, APP_TOKEN).then()
+                console.log("Token exists! " + token + " / " + subId)
             }).catch(error => console.log(error))
         }
     }
 
-    const handleAppStateChange = (nextAppState) => {
-      if (nextAppState === 'inactive') {
-        unregisterIndieDevice(alertProfile.subscriptionToken, APP_ID, APP_TOKEN);
-      }
-    }
-
-  return (
-      <View
-          style={styles.container}
-      >
-          <ThresholdMenu profile={alertProfile}/>
-          <WebView
-            style={styles.webContainer}
-            source={{ uri: 'https://capstone-react-frontend.vercel.app/' }}
-          />
-      </View>
-  );
+    return (
+        <View
+            style={styles.container}
+        >
+            <ThresholdMenu profile={alertProfile}/>
+            <WebView
+                style={styles.webContainer}
+                source={{uri: 'https://capstone-react-frontend.vercel.app/'}}
+            />
+        </View>
+    );
 }
+
 
 const styles = StyleSheet.create({
     container: {
@@ -92,8 +86,8 @@ const styles = StyleSheet.create({
         alignItems: 'center',
         shadowColor: '#000',
         shadowOffset: {
-          width: 0,
-          height: 2,
+            width: 0,
+            height: 2,
         },
         shadowOpacity: 0.25,
         shadowRadius: 4,
